@@ -15,20 +15,30 @@ class ResponseService
 
     public function success(mixed $data = null, string $message = 'Sucesso', int $status = 200): PsrResponseInterface
     {
-        return $this->response->json([
+        $response = [
             'success' => true,
-            'message' => $message,
-            'data' => $data
-        ])->withStatus($status);
+            'message' => $message
+        ];
+
+        if ($data !== null) {
+            $response['data'] = $data;
+        }
+
+        return $this->response->json($response)->withStatus($status);
     }
 
     public function created(mixed $data = null, string $message = 'Criado com sucesso'): PsrResponseInterface
     {
-        return $this->response->json([
+        $response = [
             'success' => true,
-            'message' => $message,
-            'data' => $data
-        ])->withStatus(201);
+            'message' => $message
+        ];
+
+        if ($data !== null) {
+            $response['data'] = $data;
+        }
+
+        return $this->response->json($response)->withStatus(201);
     }
 
     public function error(string $message = 'Erro', int $status = 400, mixed $errors = null): PsrResponseInterface
