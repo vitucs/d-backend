@@ -7,32 +7,14 @@ services:
       - ./:/opt/www
     ports:
       - "9501:9501"
-    environment:
-      - APP_ENV=dev
-      - SCAN_CACHEABLE=false
+    env_file:
+      - .env
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
-    networks:
-      - hyperf-network
-
-  worker:
-    container_name: hyperf-worker
-    build:
-      context: .
-      dockerfile: Dockerfile
-    volumes:
-      - .:/opt/www
-    command: ["php", "bin/hyperf.php", "queue:work"]
-    environment:
-      - APP_ENV=dev
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+    restart: unless-stopped
     networks:
       - hyperf-network
 
@@ -61,7 +43,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: redis
-    restart: always
+    restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:

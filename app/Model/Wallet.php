@@ -28,6 +28,7 @@ class Wallet extends Model
         'updated_at' => 'datetime'
     ];
 
+    protected array $hidden = ['balance', 'created_at', 'updated_at'];
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

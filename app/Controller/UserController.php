@@ -1,5 +1,4 @@
 <?php
-// app/Controller/UserController.php
 
 declare(strict_types=1);
 
@@ -7,38 +6,29 @@ namespace App\Controller;
 
 use App\Exception\UserCreationException;
 use App\Service\UserService;
-use Hyperf\HttpServer\Contract\RequestInterface;
-use Hyperf\HttpServer\Contract\ResponseInterface;
-use Hyperf\Validation\Contract\ValidatorFactoryInterface;
+use App\Request\User\RegistrationRequest;
+use Hyperf\Validation\ValidationException;
 
 class UserController extends AbstractController
 {
     public function __construct(
         private UserService $userService,
-        private ValidatorFactoryInterface $validatorFactory
     ) {}
 
-    public function store(RequestInterface $request, ResponseInterface $response)
+    public function store(RegistrationRequest $request)
     {
-        $validator = $this->validatorFactory->make($request->all(), [
-            'full_name' => 'required|string|max:255',
-            'document'  => 'required|string|unique:users,document',
-            'email'     => 'required|email|unique:users,email',
-            'password'  => 'required|string|min:6',
-            'type'      => 'required|string|in:common,shopkeeper'
-        ]);
-
-        if ($validator->fails()) {
-            return $response->json(['errors' => $validator->errors()])->withStatus(422);
-        }
-
         try {
-            $user = $this->userService->createUser($validator->validated());
-            return $response->json($user)->withStatus(201);
+            $validatedData = $request->validated();
+
+            $this->userService->createUser($validatedData);
+
+            return $this->responseService->created(message: 'Usuário criado com sucesso');
+        } catch (ValidationException $e) {
+            return $this->responseService->validationError($e->validator->errors()->all(),'Dados de entrada inválidos');  
         } catch (UserCreationException $e) {
-            return $response->json(['error' => $e->getMessage()])->withStatus($e->getCode());
+            return $this->responseService->error($e->getMessage(), $e->getCode());
         } catch (\Throwable $e) {
-            return $response->json(['error' => 'Erro interno no servidor.'])->withStatus(500);
+            return $this->responseService->serverError();
         }
     }
 }

@@ -20,7 +20,7 @@ class User extends Model
     protected ?string $table = 'users';
     protected array $fillable = ['full_name', 'document', 'email', 'password', 'type'];
     protected array $casts = ['id' => 'integer', 'created_at' => 'datetime', 'updated_at' => 'datetime'];
-
+    protected array $hidden = ['password', 'created_at', 'updated_at'];
     public function wallet(): HasOne
     {
         return $this->hasOne(Wallet::class);

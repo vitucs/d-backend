@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\DTO\TransactionData;
 use App\Exception\TransactionException;
 use App\Job\NotificationJob;
 use App\Model\User;
@@ -21,20 +22,20 @@ class TransactionService
         private DriverFactory $driverFactory
     ) {}
 
-    public function handle(int $payerId, int $payeeId, float $amount): void
+    public function handle(TransactionData $transactionData): void
     {
-        $payer = $this->userRepository->findById($payerId);
-        $payee = $this->userRepository->findById($payeeId);
+        $payer = $this->userRepository->findById($transactionData->payerId);
+        $payee = $this->userRepository->findById($transactionData->payeeId);
 
-        $this->validateTransaction($payer, $amount);
+        $this->validateTransaction($payer, $transactionData->amount);
 
         if (!$this->authClient->isAuthorized()) {
             throw new TransactionException('Transação não autorizada.', 403);
         }
 
-        $this->executeTransaction($payer, $payee, $amount);
+        $this->executeTransaction($payer, $payee, $transactionData->amount);
         
-        $this->dispatchNotification($payee, $amount);
+        $this->dispatchNotification($payee, $transactionData->amount);
     }
 
     private function validateTransaction(User $payer, float $amount): void
@@ -71,8 +72,6 @@ class TransactionService
     {
         $message = "Você recebeu uma transferência de R$ " . number_format($amount, 2, ',', '.');
         $job = new NotificationJob($payee->email, $message);
-        
-        // Pega o driver 'default' da fila e envia o job
         $queue = $this->driverFactory->get('default');
         $queue->push($job);
     }
