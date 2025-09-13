@@ -1,23 +1,4 @@
 services:
-  app:
-    container_name: hyperf-app
-    build:
-      context: .
-    volumes:
-      - ./:/opt/www
-    ports:
-      - "9501:9501"
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - hyperf-network
-
   db:
     image: mysql:8.0
     container_name: mysql
@@ -38,7 +19,20 @@ services:
       retries: 5
       start_period: 30s
     networks:
-      - hyperf-network
+      - app-network
+
+  rabbitmq:
+    image: rabbitmq:3.10-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    networks:
+      - app-network
 
   redis:
     image: redis:7-alpine
@@ -54,12 +48,89 @@ services:
       timeout: 3s
       retries: 5
     networks:
-      - hyperf-network
+      - app-network
+
+  api_gateway:
+    build:
+      context: ./api-gateway
+    container_name: api-gateway
+    restart: unless-stopped
+    ports:
+      - "9501:9501"
+    depends_on:
+      - service-users
+      - service-transactions
+    environment:
+      USERS_SERVICE_URL: http://service-users:9501
+      TRANSACTIONS_SERVICE_URL: http://service-transactions:9501
+    networks:
+      - app-network
+
+  service-users:
+    build:
+      context: ./service-users
+    container_name: service-users
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: hyperf
+      DB_USERNAME: hyperf
+      DB_PASSWORD: hyperf
+      REDIS_HOST: redis
+    networks:
+      - app-network
+
+  service-transactions:
+    build:
+      context: ./service-transactions
+    container_name: service-transactions
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: hyperf
+      DB_USERNAME: hyperf
+      DB_PASSWORD: hyperf
+      REDIS_HOST: redis
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: user
+      RABBITMQ_PASS: password
+    networks:
+      - app-network
+
+  service-notifications:
+    build:
+      context: ./service-notifications
+    container_name: service-notifications
+    restart: unless-stopped
+    depends_on:
+      rabbitmq:
+        condition: service_started
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: user
+      RABBITMQ_PASS: password
+    networks:
+      - app-network
 
 volumes:
   mysql-data:
   redis-data:
 
 networks:
-  hyperf-network:
-    name: hyperf-network
+  app-network:
