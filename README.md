@@ -1,63 +1,109 @@
-# Introduction
+# Projeto PicPay Simplificado - Arquitetura de Microsserviços
 
-This is a skeleton application using the Hyperf framework. This application is meant to be used as a starting place for those looking to get their feet wet with Hyperf Framework.
+Este projeto é uma implementação de uma arquitetura de microsserviços para simular um sistema de transações financeiras, utilizando o framework Hyperf. O objetivo é demonstrar a comunicação entre serviços de forma desacoplada, utilizando um API Gateway como ponto único de entrada e mensageria para operações assíncronas.
 
-# Requirements
+## ✨ Features
 
-Hyperf has some requirements for the system environment, it can only run under Linux and Mac environment, but due to the development of Docker virtualization technology, Docker for Windows can also be used as the running environment under Windows.
+* **Arquitetura de Microsserviços:** O projeto é modularizado em serviços independentes, cada um com sua responsabilidade única.
+* **API Gateway:** Centraliza o acesso aos microsserviços, atuando como um proxy reverso para todas as requisições externas.
+* **Comunicação Assíncrona:** Uso do RabbitMQ para garantir a entrega de mensagens e a execução de tarefas em segundo plano, como o envio de notificações.
+* **Containerização Completa:** Todo o ambiente de desenvolvimento é gerenciado pelo Docker e Docker Compose, garantindo consistência e facilidade na configuração.
+* **Alta Performance:** Construído com Hyperf 3.1, um framework PHP moderno e de alta performance baseado em corrotinas com Swoole.
 
-The various versions of Dockerfile have been prepared for you in the [hyperf/hyperf-docker](https://github.com/hyperf/hyperf-docker) project, or directly based on the already built [hyperf/hyperf](https://hub.docker.com/r/hyperf/hyperf) Image to run.
+## 🚀 Tecnologias Utilizadas
 
-When you don't want to use Docker as the basis for your running environment, you need to make sure that your operating environment meets the following requirements:  
+* **Framework PHP:** [Hyperf 3.1](https://hyperf.wiki/)
+* **Banco de Dados Relacional:** [MySQL](https://www.mysql.com/)
+* **Cache em Memória:** [Redis](https://redis.io/)
+* **Sistema de Mensageria:** [RabbitMQ](https://www.rabbitmq.com/)
+* **Containerização:** [Docker](https://www.docker.com/) & [Docker Compose](https://docs.docker.com/compose/)
 
- - PHP >= 8.1
- - Any of the following network engines
-   - Swoole PHP extension >= 5.0，with `swoole.use_shortname` set to `Off` in your `php.ini`
-   - Swow PHP extension >= 1.3
- - JSON PHP extension
- - Pcntl PHP extension
- - OpenSSL PHP extension （If you need to use the HTTPS）
- - PDO PHP extension （If you need to use the MySQL Client）
- - Redis PHP extension （If you need to use the Redis Client）
- - Protobuf PHP extension （If you need to use the gRPC Server or Client）
+## 📂 Estrutura do Projeto
 
-# Installation using Composer
+O repositório está organizado com cada microsserviço em sua própria pasta, facilitando o desenvolvimento e a manutenção independente de cada um.
 
-The easiest way to create a new Hyperf project is to use [Composer](https://getcomposer.org/). If you don't have it already installed, then please install as per [the documentation](https://getcomposer.org/download/).
-
-To create your new Hyperf project:
-
-```bash
-composer create-project hyperf/hyperf-skeleton path/to/install
+```
+.
+├── api-gateway/          # Ponto de Entrada (Gateway) para os outros serviços
+├── service-notifications/  # Microsserviço para envio de notificações
+├── service-transactions/   # Microsserviço que gerencia as transações
+├── service-users/          # Microsserviço para gerenciamento de usuários
+├── .gitignore
+├── commit.sh             # Script auxiliar para padronização de commits
+├── desafio-pic.drawio    # Arquivo de diagrama da arquitetura (Draw.io)
+├── docker-compose.yml    # Orquestrador dos containers de todos os serviços
+├── LICENSE
+└── README.md
 ```
 
-If your development environment is based on Docker you can use the official Composer image to create a new Hyperf project:
+### Sobre os Microsserviços
+
+* **`api-gateway`**: Responsável por ser a única porta de entrada para as requisições do cliente. Ele as roteia para o serviço interno correspondente e pode agregar respostas de múltiplos serviços.
+* **`service-users`**: Gerencia todas as operações relacionadas a usuários (ex: cadastro, autenticação, consulta de saldo).
+* **`service-transactions`**: Orquestra a lógica de transferência de valores entre usuários, validações e autorizações de transações.
+* **`service-notifications`**: Fica responsável por enviar notificações (e-mail, SMS, etc.) aos usuários após a conclusão de uma transação, recebendo a tarefa através de uma fila no RabbitMQ.
+
+## 📋 Pré-requisitos
+
+Antes de começar, certifique-se de que você tem as seguintes ferramentas instaladas em seu sistema:
+
+* [Docker Engine](https://docs.docker.com/engine/install/)
+* [Docker Compose](https://docs.docker.com/compose/install/)
+
+## 🏁 Como Rodar o Projeto
+
+Siga os passos abaixo para configurar e executar o ambiente de desenvolvimento localmente.
+
+**1. Clone o repositório:**
 
 ```bash
-docker run --rm -it -v $(pwd):/app composer create-project --ignore-platform-reqs hyperf/hyperf-skeleton path/to/install
+git clone <URL_DO_SEU_REPOSITORIO_AQUI>
+cd <NOME_DO_DIRETORIO>
 ```
 
-# Getting started
+**2. Configure as variáveis de ambiente:**
 
-Once installed, you can run the server immediately using the command below.
+Cada microsserviço (`api-gateway`, `service-users`, etc.) possui um arquivo `.env.example`. Você precisa criar uma cópia chamada `.env` em cada um desses diretórios e, se necessário, ajustar as variáveis.
 
 ```bash
-cd path/to/install
-php bin/hyperf.php start
+# Exemplo para o serviço de usuários
+cp service-users/.env.example service-users/.env
+
+# Exemplo para o serviço de transações
+cp service-transactions/.env.example service-transactions/.env
+
+# Repita o processo para todos os outros serviços
 ```
 
-Or if in a Docker based environment you can use the `docker-compose.yml` provided by the template:
+**3. Inicie os containers:**
+
+Na pasta raiz do projeto (onde o arquivo `docker-compose.yml` está localizado), execute o comando abaixo. Ele irá construir as imagens e iniciar todos os serviços, bancos de dados e ferramentas em background.
 
 ```bash
-cd path/to/install
-docker-compose up
+docker-compose up -d --build
 ```
 
-This will start the cli-server on port `9501`, and bind it to all network interfaces. You can then visit the site at `http://localhost:9501/` which will bring up Hyperf default home page.
+**4. Execute as migrações do banco de dados:**
 
-## Hints
+Para criar as tabelas necessárias no MySQL, execute os comandos de migração do Hyperf nos serviços que interagem com o banco de dados.
 
-- A nice tip is to rename `hyperf-skeleton` of files like `composer.json` and `docker-compose.yml` to your actual project name.
-- Take a look at `config/routes.php` and `app/Controller/IndexController.php` to see an example of a HTTP entrypoint.
+```bash
+docker-compose exec service-users php bin/hyperf.php migrate
+docker-compose exec service-transactions php bin/hyperf.php migrate
+```
 
-**Remember:** you can always replace the contents of this README.md file to something that fits your project description.
+Pronto! A aplicação agora deve estar em execução. O **API Gateway** estará escutando na porta definida no `docker-compose.yml`.
+
+## 🤝 Como Contribuir
+
+Contribuições são o que tornam a comunidade de código aberto um lugar incrível para aprender, inspirar e criar. Qualquer contribuição que você fizer será **muito apreciada**.
+
+1.  Faça um **Fork** do projeto
+2.  Crie uma **Branch** para sua Feature (`git checkout -b feature/AmazingFeature`)
+3.  Faça o **Commit** de suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4.  Faça o **Push** para a Branch (`git push origin feature/AmazingFeature`)
+5.  Abra um **Pull Request**
+
+## 📄 Licença
+
+Distribuído sob a Licença MIT. Veja o arquivo `LICENSE` para mais informações.
