@@ -11,8 +11,6 @@ declare(strict_types=1);
  */
 use Hyperf\HttpServer\Router\Router;
 
-Router::addRoute(['GET', 'POST', 'HEAD'], '/', 'App\Controller\IndexController@index');
+Router::post('/transfers', 'App\Controller\TransactionController@createTransfer');
 
-Router::get('/favicon.ico', function () {
-    return '';
-});
+Router::post('/wallets', 'App\Controller\TransactionController@createWallet');
