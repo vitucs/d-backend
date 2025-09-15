@@ -39,4 +39,18 @@ class UserController extends AbstractController
             return $response->json(['errors' => 'Ocorreu um erro interno ao criar o usuário.'])->withStatus(500);
         }
     }
+
+    public function show(RequestInterface $request, ResponseInterface $response)
+    {
+        $userId = $request->route('id');
+        $user = $this->userService->findUserById((int) $userId);
+
+        if (!$user) {
+            return $response->json(['message' => 'Usuário não encontrado.'])->withStatus(404);
+        }
+
+        $user->makeHidden('password');
+        return $response->json($user);
+
+    }
 }

@@ -9,9 +9,21 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
-use function Hyperf\Support\env;
-
 return [
-    'users_service_url' => env('USERS_SERVICE_URL', 'http://service-users:9501'),
-    'authorization_service_url' => env('AUTHORIZATION_SERVICE_URL', 'https://util.devi.tools/api/v2/authorize'),
+    'consumers' => [
+        [
+            // The service name, this name should as same as with the name of service provider.
+            'name' => 'YourServiceName',
+            // The service registry, if `nodes` is missing below, then you should provide this configs.
+            'registry' => [
+                'protocol' => 'consul',
+                'address' => 'Enter the address of service registry',
+            ],
+            // If `registry` is missing, then you should provide the nodes configs.
+            'nodes' => [
+                // Provide the host and port of the service provider.
+                // ['host' => 'The host of the service provider', 'port' => 9502]
+            ],
+        ],
+    ],
 ];

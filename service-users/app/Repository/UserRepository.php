@@ -14,4 +14,10 @@ class UserRepository
 
         return User::create($data);
     }
+
+    public function find(int $id): ?User
+    {
+        return User::find($id);
+    }
+
 }

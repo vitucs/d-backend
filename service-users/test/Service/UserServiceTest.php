@@ -8,51 +8,31 @@ use App\Model\User;
 use App\Repository\UserRepository;
 use App\Service\Client\WalletServiceClient;
 use App\Service\UserService;
-use Hyperf\DbConnection\Db;
 use Mockery;
-use PHPUnit\Framework\TestCase;
-use Hyperf\Di\Container;
-use Hyperf\Context\ApplicationContext;
-use Hyperf\Contract\ConfigInterface;
-use Hyperf\Config\Config;
-use Hyperf\DbConnection\ConnectionResolver;
-use Hyperf\Di\Definition\DefinitionSourceFactory;
+use HyperfTest\BaseTestCase;
 use Hyperf\Database\ConnectionResolverInterface;
 use Hyperf\Database\ConnectionInterface;
-use Hyperf\Logger\LoggerFactory;
 
-
-/**
- * @internal
- * @covers UserService
- */
-class UserServiceTest extends TestCase
+class UserServiceTest extends BaseTestCase
 {
     protected function tearDown(): void
     {
         Mockery::close();
+        parent::tearDown();
     }
 
     public function testRegisterNewUserSuccess(): void
     {
-        // Configuração do Container e dependências simuladas
-        $config = new Config([
-            'databases' => require BASE_PATH . '/config/autoload/databases.php',
-            'logger' => require BASE_PATH . '/config/autoload/logger.php',
-        ]);
+        $connectionMock = Mockery::mock(ConnectionInterface::class);
+        $connectionMock->shouldReceive('beginTransaction')->once();
+        $connectionMock->shouldReceive('commit')->once();
+        $connectionMock->shouldReceive('rollBack')->never();
 
-        $container = new Container((new DefinitionSourceFactory())());
-        $container->set(ConfigInterface::class, $config);
-        $container->set(LoggerFactory::class, new LoggerFactory($container, $config));
-
-        $resolver = new ConnectionResolver($container);
-        $container->set(ConnectionResolver::class, $resolver);
-        $container->set(ConnectionResolverInterface::class, $resolver);
-        $container->set(ConnectionInterface::class, $resolver->connection());
-
-        ApplicationContext::setContainer($container);
+        $connectionResolverMock = Mockery::mock(ConnectionResolverInterface::class);
+        $connectionResolverMock->shouldReceive('connection')->andReturn($connectionMock);
 
         $userData = [
+            'id' => 1,
             'full_name' => 'Test User',
             'document'  => '12345678901',
             'email'     => 'test@example.com',
@@ -64,28 +44,15 @@ class UserServiceTest extends TestCase
         $mockUser->id = 1;
 
         $userRepositoryMock = Mockery::mock(UserRepository::class);
-        $userRepositoryMock->shouldReceive('createUser')->once()->andReturn($mockUser);
+        $userRepositoryMock->shouldReceive('createUser')->once()->with($userData)->andReturn($mockUser);
 
         $walletServiceClientMock = Mockery::mock(WalletServiceClient::class);
-        $walletServiceClientMock->shouldReceive('createWalletForUser')->with(1)->once()->andReturn(true);
+        $walletServiceClientMock->shouldReceive('createWalletForUser')->once()->with(1)->andReturnTrue();
 
-        $container->set(UserRepository::class, $userRepositoryMock);
-        $container->set(WalletServiceClient::class, $walletServiceClientMock);
-
-        $connectionMock = Mockery::mock(ConnectionInterface::class);
-        $connectionMock->shouldReceive('beginTransaction')->once();
-        $connectionMock->shouldReceive('commit')->once();
-        $connectionMock->shouldReceive('rollBack')->never();
-
-        $container->set(ConnectionInterface::class, $connectionMock);
-
-        // Instanciando o serviço com container
-        $userService = $container->get(UserService::class);
-
-        // Executando o teste
+        $userService = new UserService($userRepositoryMock, $walletServiceClientMock, $connectionResolverMock);
+        
         $result = $userService->registerNewUser($userData);
 
-        // Asserts
         $this->assertInstanceOf(User::class, $result);
         $this->assertEquals(1, $result->id);
     }

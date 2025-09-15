@@ -18,5 +18,4 @@ return [
             'mixin',
         ],
     ],
-    'cacheable' => true,
 ];

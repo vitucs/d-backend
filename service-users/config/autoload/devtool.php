@@ -9,49 +9,36 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
-use function Hyperf\Support\env;
-
 return [
-    // Supported IDEs: "sublime", "textmate", "cursor", "emacs", "macvim", "phpstorm", "idea",
-    //     "vscode", "vscode-insiders", "vscode-remote", "vscode-insiders-remote",
-    //     "atom", "nova", "netbeans", "xdebug"
-    'ide' => env('DEVTOOL_IDE', ''),
-
     'generator' => [
         'amqp' => [
             'consumer' => [
-                'namespace' => 'App\Amqp\Consumer',
+                'namespace' => 'App\\Amqp\\Consumer',
             ],
             'producer' => [
-                'namespace' => 'App\Amqp\Producer',
+                'namespace' => 'App\\Amqp\\Producer',
             ],
         ],
         'aspect' => [
-            'namespace' => 'App\Aspect',
-        ],
-        'class' => [
-            'namespace' => 'App',
+            'namespace' => 'App\\Aspect',
         ],
         'command' => [
-            'namespace' => 'App\Command',
+            'namespace' => 'App\\Command',
         ],
         'controller' => [
-            'namespace' => 'App\Controller',
+            'namespace' => 'App\\Controller',
         ],
         'job' => [
-            'namespace' => 'App\Job',
+            'namespace' => 'App\\Job',
         ],
         'listener' => [
-            'namespace' => 'App\Listener',
+            'namespace' => 'App\\Listener',
         ],
         'middleware' => [
-            'namespace' => 'App\Middleware',
+            'namespace' => 'App\\Middleware',
         ],
-        'process' => [
-            'namespace' => 'App\Process',
-        ],
-        'request' => [
-            'namespace' => 'App\Request',
+        'Process' => [
+            'namespace' => 'App\\Processes',
         ],
     ],
 ];

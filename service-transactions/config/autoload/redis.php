@@ -13,7 +13,7 @@ use function Hyperf\Support\env;
 
 return [
     'default' => [
-        'host' => env('REDIS_HOST', 'redis'),
+        'host' => env('REDIS_HOST', 'localhost'),
         'auth' => env('REDIS_AUTH', null),
         'port' => (int) env('REDIS_PORT', 6379),
         'db' => (int) env('REDIS_DB', 0),
@@ -23,7 +23,7 @@ return [
             'connect_timeout' => 10.0,
             'wait_timeout' => 3.0,
             'heartbeat' => -1,
-            'reconnect_interval' => 1.0,
+            'max_idle_time' => (float) env('REDIS_MAX_IDLE_TIME', 60),
         ],
     ],
 ];

@@ -1,9 +1,18 @@
 <?php
+
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 use Hyperf\HttpServer\Router\Router;
 
-// Rota para o api-gateway iniciar uma transferência
-Router::post('/transfers', 'App\Controller\TransactionController@createTransfer');
+Router::addRoute(['GET', 'POST', 'HEAD'], '/', 'App\Controller\IndexController@index');
 
-// Rota para o service-users criar uma nova carteira
-Router::post('/wallets', 'App\Controller\TransactionController@createWallet');
+Router::get('/favicon.ico', function () {
+    return '';
+});

@@ -17,16 +17,7 @@ use function Hyperf\Support\env;
 return [
     'app_name' => env('APP_NAME', 'skeleton'),
     'app_env' => env('APP_ENV', 'dev'),
-    'scan_cacheable' => (bool) env('SCAN_CACHEABLE', false),
-    'scan_handler' => \Hyperf\Di\ScanHandler\ProcScanHandler::class,
-    'scan' => [
-        'paths' => [
-            BASE_PATH . '/app',
-        ],
-        'ignore_annotations' => [
-            'mixin',
-        ],
-    ],
+    'scan_cacheable' => env('SCAN_CACHEABLE', false),
     StdoutLoggerInterface::class => [
         'log_level' => [
             LogLevel::ALERT,

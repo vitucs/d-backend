@@ -4,8 +4,6 @@ WORKDIR /opt/www
 
 COPY . .
 
-# Instala as dependências de produção
-RUN composer install --no-dev -o
+RUN composer install -o
 
-# Comando para iniciar o consumidor da fila, e não um servidor web
-CMD ["php", "./bin/hyperf.php", "amqp:consume", "--name=notifications", "--pool=default", "-m", "128"]
+CMD ["php", "./bin/hyperf.php", "start"]

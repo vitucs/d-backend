@@ -20,7 +20,7 @@ class NotificationJob extends Job
     public function handle(): void
     {
         $container = ApplicationContext::getContainer();
-        $notificationService = $container->get(NotificationServiceClient::class);
+        $notificationServiceClient = $container->get(NotificationServiceClient::class);
         $logger = $container->get(LoggerInterface::class);
 
         $message = sprintf(
@@ -31,7 +31,7 @@ class NotificationJob extends Job
 
         $logger->info("Enviando notificação para {$this->payeeEmail}...");
 
-        $notificationService->send($this->payeeEmail, $message);
+        $notificationServiceClient->send($this->payeeEmail, $message);
 
         $logger->info("Notificação para {$this->payeeEmail} enviada com sucesso.");
     }
