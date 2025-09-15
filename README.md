@@ -1,4 +1,4 @@
-# Projeto PicPay Simplificado - Arquitetura de Microsserviços
+# Projeto "Simplificado" - Arquitetura de Microsserviços
 
 Este projeto é uma implementação de uma arquitetura de microsserviços para simular um sistema de transações financeiras, utilizando o framework Hyperf. O objetivo é demonstrar a comunicação entre serviços de forma desacoplada, utilizando um API Gateway como ponto único de entrada e mensageria para operações assíncronas.
 
