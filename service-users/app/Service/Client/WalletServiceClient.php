@@ -36,4 +36,22 @@ class WalletServiceClient
             );
         }
     }
+
+    public function addBalanceToWallet(float $value, int $userId): bool
+    {
+        try {
+            $response = $this->client->post("/wallets/$userId/balance", [
+                'json' => ['value' => $value]
+            ]);
+
+            return $response->getStatusCode() === 200;
+        } catch (RequestException $e) {
+            var_dump($e);
+            die();
+            throw new ServiceException(
+                'Não foi possível adicionar saldo à carteira do usuário.',
+                503
+            );
+        }
+    }
 }

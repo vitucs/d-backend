@@ -9,6 +9,7 @@ use Hyperf\Guzzle\ClientFactory;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Exception\RequestException;
 use App\Exception\ServiceException;
+use App\Exception\TransactionException;
 
 class TransactionServiceClient
 {
@@ -31,15 +32,17 @@ class TransactionServiceClient
         try {
             return $this->client->post('/transfers', ['json' => $data]);
         } catch (RequestException $e) {
-            $message = 'Erro ao se comunicar com o serviço de transações.';
-            $statusCode = 503;
-
             if ($e->hasResponse()) {
-                $message = $e->getResponse()->getBody()->getContents();
-                $statusCode = $e->getResponse()->getStatusCode();
+                $response = $e->getResponse();
+                $statusCode = $response->getStatusCode();
+                $body = json_decode($response->getBody()->getContents(), true);
+
+                $errorMessage = $body['error'] ?? 'Ocorreu um erro durante a transação.';
+
+                throw new TransactionException($errorMessage, $statusCode);
             }
 
-            throw new ServiceException($message, $statusCode);
+            throw new TransactionException('Não foi possível se comunicar com o serviço de transações.', 503);
         }
     }
 }

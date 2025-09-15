@@ -35,9 +35,9 @@ class TransactionController extends AbstractController
     public function createTransfer(RequestInterface $request, ResponseInterface $response, TransactionService $transactionService)
     {
         $validator = $this->validatorFactory->make($request->all(), [
-            'payer_id' => 'required|integer',
-            'payee_id' => 'required|integer|different:payer_id',
-            'amount'   => 'required|numeric|min:0.01',
+            'payer' => 'required|integer',
+            'payee' => 'required|integer|different:payer',
+            'value'   => 'required|numeric|min:0.01',
         ]);
         
         if ($validator->fails()) {
@@ -46,13 +46,13 @@ class TransactionController extends AbstractController
 
         try {
             $data = $validator->validated();
-            $transactionService->handleTransfer($data['payer_id'], $data['payee_id'], (float)$data['amount']);
+            $transactionService->handleTransfer((int)$data['payer'], (int)$data['payee'], (float)$data['value']);
             
             return $response->json(['message' => 'Transferência realizada com sucesso.'])->withStatus(201);
         } catch (TransactionException $e) {
             return $response->json(['error' => $e->getMessage()])->withStatus($e->getCode());
         } catch (Throwable $e) {
-            return $response->json(['error' => 'Erro interno no servidor.'])->withStatus(500);
+            return $response->json(['error' => "Erro interno no servidor: $e"])->withStatus(500);
         }
     }
 }

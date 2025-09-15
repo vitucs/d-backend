@@ -36,7 +36,7 @@ class UserController extends AbstractController
             $user->makeHidden('password');
             return $user;
         } catch (Throwable $e) {
-            return $response->json(['errors' => 'Ocorreu um erro interno ao criar o usuário.'])->withStatus(500);
+            return $response->json(['errors' => "Ocorreu um erro interno ao criar o usuário: $e"])->withStatus(500);
         }
     }
 
@@ -51,6 +51,24 @@ class UserController extends AbstractController
 
         $user->makeHidden('password');
         return $response->json($user);
+    }
 
+    public function addBalance(RequestInterface $request, ResponseInterface $response, int $id)
+    {
+        $validator = $this->validatorFactory->make($request->all(), [
+            'value' => 'required|numeric|min:0.01',
+        ]);
+
+        if ($validator->fails()) {
+            return $response->json(['errors' => $validator->errors()])->withStatus(422);
+        }
+
+        try {
+            $user = $this->userService->addValueToWallet($validator->validated(), $id);
+            $user->makeHidden('password');
+            return $user;
+        } catch (Throwable $e) {
+            return $response->json(['errors' => "Ocorreu um erro interno ao criar o usuário: $e"])->withStatus(500);
+        }
     }
 }

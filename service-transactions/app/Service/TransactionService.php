@@ -26,7 +26,6 @@ class TransactionService
 
     public function handleTransfer(int $payerId, int $payeeId, float $amount): void
     {
-        // 1. Buscar e validar usuários
         $payer = $this->userServiceClient->findUserById($payerId);
         $payee = $this->userServiceClient->findUserById($payeeId);
 
@@ -34,7 +33,6 @@ class TransactionService
             throw new TransactionException('Usuário pagador ou recebedor inválido.', 404);
         }
 
-        // 2. Validar regras de negócio
         $payerWallet = $this->walletRepository->findByUserId($payer->id);
         if ($payer->type === 'shopkeeper') {
             throw new TransactionException('Lojistas não podem realizar transferências.', 403);
@@ -43,16 +41,13 @@ class TransactionService
             throw new TransactionException('Saldo insuficiente.', 400);
         }
 
-        // 3. Verificar autorização externa
         if (!$this->authServiceClient->isAuthorized()) {
             throw new TransactionException('Transferência não autorizada.', 403);
         }
 
-        // 4. Efetuar a transação (operação atômica)
         $this->executeDatabaseTransaction($payerWallet, $payee->id, $amount);
 
-        // 5. Enfileirar notificação (se tudo deu certo)
-        $payerDetails = $this->userServiceClient->findUserById($payerId); // Buscar dados completos
+        $payerDetails = $this->userServiceClient->findUserById($payerId);
         $this->dispatchNotification($payee->email, $amount, $payerDetails->full_name ?? 'Um usuário');
     }
 

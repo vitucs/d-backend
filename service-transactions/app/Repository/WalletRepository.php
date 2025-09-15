@@ -19,7 +19,6 @@ class WalletRepository
         return Wallet::where('user_id', $userId)->first();
     }
 
-    // Método atômico para debitar o saldo, evitando condição de corrida.
     public function decrementBalance(Wallet $wallet, float $amount): bool
     {
         $updatedRows = Db::table('wallets')
@@ -32,6 +31,10 @@ class WalletRepository
 
     public function incrementBalance(Wallet $wallet, float $amount): bool
     {
-        return $wallet->increment('balance', $amount);
+        $updatedRows = Db::table('wallets')
+            ->where('id', $wallet->id)
+            ->increment('balance', $amount);
+
+        return $updatedRows > 0;
     }
 }

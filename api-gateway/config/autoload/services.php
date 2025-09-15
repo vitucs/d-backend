@@ -9,6 +9,8 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
+use function Hyperf\Support\env;
+
 return [
     'consumers' => [
         [
@@ -26,4 +28,6 @@ return [
             ],
         ],
     ],
+    'users_service_url' => env('USERS_SERVICE_URL', ''),
+    'transactions_service_url' => env('TRANSACTIONS_SERVICE_URL', ''),
 ];

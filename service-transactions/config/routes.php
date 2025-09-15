@@ -14,3 +14,5 @@ use Hyperf\HttpServer\Router\Router;
 Router::post('/transfers', 'App\Controller\TransactionController@createTransfer');
 
 Router::post('/wallets', 'App\Controller\TransactionController@createWallet');
+
+Router::post('/wallets/{id}/balance', 'App\Controller\WalletController@addBalance');

@@ -9,6 +9,9 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
+
+use function Hyperf\Support\env;
+
 return [
     'consumers' => [
         [
@@ -26,4 +29,6 @@ return [
             ],
         ],
     ],
+    'authorization_service_url' => env('AUTHORIZATION_SERVICE_URL', 'https://util.devi.tools/api/v2/authorize'),
+    'users_service_url' => env('USERS_SERVICE_URL', 'http://service-users:9501'),
 ];

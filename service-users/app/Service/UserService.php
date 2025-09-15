@@ -50,4 +50,16 @@ class UserService
         return $this->userRepository->find($id);
     }
 
+    public function addValueToWallet(array $data, int $id): User
+    {
+        $user = $this->userRepository->find($id);
+
+        if (!$user) {
+            throw new BusinessException(404, 'Usuário não encontrado.');
+        }
+
+        $this->walletServiceClient->addBalanceToWallet($data['value'], $id);
+
+        return $user;
+    }
 }

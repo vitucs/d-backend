@@ -8,7 +8,7 @@ use Hyperf\Contract\ConfigInterface;
 use Hyperf\Guzzle\ClientFactory;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Exception\RequestException;
-use App\Exception\ServiceException;
+use App\Exception\UserException;
 
 class UserServiceClient
 {
@@ -31,15 +31,36 @@ class UserServiceClient
         try {
             return $this->client->post('/users', ['json' => $data]);
         } catch (RequestException $e) {
-            $message = 'Erro ao se comunicar com o serviço de usuários.';
-            $statusCode = 503;
-
             if ($e->hasResponse()) {
-                $message = $e->getResponse()->getBody()->getContents();
-                $statusCode = $e->getResponse()->getStatusCode();
+                $response = $e->getResponse();
+                $statusCode = $response->getStatusCode();
+                $body = json_decode($response->getBody()->getContents(), true);
+
+                $errorMessage = $body['error'] ?? 'Ocorreu um erro durante a operacao.';
+
+                throw new UserException($errorMessage, $statusCode);
             }
 
-            throw new ServiceException($message, $statusCode);
+            throw new UserException('Não foi possível se comunicar com o serviço de usuarios.', 503);
+        }
+    }
+
+    public function addBalance(float $value, int $id): ResponseInterface
+    {
+        try {
+            return $this->client->post("/users/$id/balance", ['json' => ['value' => $value]]);
+        } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $response = $e->getResponse();
+                $statusCode = $response->getStatusCode();
+                $body = json_decode($response->getBody()->getContents(), true);
+
+                $errorMessage = $body['error'] ?? 'Ocorreu um erro durante a operacao.';
+
+                throw new UserException($errorMessage, $statusCode);
+            }
+
+            throw new UserException('Não foi possível se comunicar com o serviço de usuarios.', 503);
         }
     }
 }

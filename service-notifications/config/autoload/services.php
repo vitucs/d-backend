@@ -26,4 +26,5 @@ return [
             ],
         ],
     ],
+    'external_notification_service_url' => 'https://util.devi.tools/api/v1/notify',
 ];

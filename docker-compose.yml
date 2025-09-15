@@ -61,6 +61,7 @@ services:
       - service-users
       - service-transactions
     environment:
+      APP_NAME: api-gateway
       USERS_SERVICE_URL: http://service-users:9501
       TRANSACTIONS_SERVICE_URL: http://service-transactions:9501
     networks:
@@ -77,12 +78,14 @@ services:
       redis:
         condition: service_healthy
     environment:
+      DB_DRIVER: mysql
       DB_HOST: db
       DB_PORT: 3306
       DB_DATABASE: hyperf
       DB_USERNAME: hyperf
       DB_PASSWORD: hyperf
       REDIS_HOST: redis
+      TRANSACTIONS_SERVICE_URL: http://service-transactions:9501
     networks:
       - app-network
 
@@ -109,6 +112,7 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: user
       RABBITMQ_PASS: password
+      USERS_SERVICE_URL: http://service-users:9501
     networks:
       - app-network
 
@@ -134,3 +138,4 @@ volumes:
 
 networks:
   app-network:
+    driver: bridge
